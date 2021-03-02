@@ -1,4 +1,4 @@
-package go_orm
+package goorm
 
 import (
 	"database/sql"
