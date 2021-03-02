@@ -43,42 +43,42 @@ func (t *Table) Where(where map[string]interface{}) *Table {
 	return t
 }
 
-func (t *Table) WhereCompare(fieldName string, condition string, fieldValue interface{}) *Table {
-	if condition == "=" {
-		t.whereCondition[fieldName] = fieldValue
+func (t *Table) WhereCompare(field string, compare string, value interface{}) *Table {
+	if compare == "=" {
+		t.whereCondition[field] = value
 	} else {
-		t.compareCondition = append(t.compareCondition, []interface{}{fieldName, condition, fieldValue})
+		t.compareCondition = append(t.compareCondition, []interface{}{field, compare, value})
 	}
 	return t
 }
 
-func (t *Table) WhereBetween(fieldName string, left string, right string) *Table {
-	t.whereBetweenCondition = append(t.whereBetweenCondition, []string{fieldName, left, right})
+func (t *Table) WhereBetween(field string, left string, right string) *Table {
+	t.whereBetweenCondition = append(t.whereBetweenCondition, []string{field, left, right})
 	return t
 }
 
-func (t *Table) WhereIn(fieldName string, scope []interface{}) *Table {
-	t.whereInCondition[fieldName] = scope
+func (t *Table) WhereIn(field string, scope []interface{}) *Table {
+	t.whereInCondition[field] = scope
 	return t
 }
 
-func (t *Table) WhereNotIn(fieldName string, scope []interface{}) *Table {
-	t.whereNotInCondition[fieldName] = scope
+func (t *Table) WhereNotIn(field string, scope []interface{}) *Table {
+	t.whereNotInCondition[field] = scope
 	return t
 }
 
-func (t *Table) WhereNull(nullField ...string) *Table {
-	t.whereNullField = nullField
+func (t *Table) WhereNull(fields ...string) *Table {
+	t.whereNullField = fields
 	return t
 }
 
-func (t *Table) WhereNotNull(nullField ...string) *Table {
-	t.whereNotNullField = nullField
+func (t *Table) WhereNotNull(fields ...string) *Table {
+	t.whereNotNullField = fields
 	return t
 }
 
-func (t *Table) OrderBy(fieldName string, sort bool) *Table {
-	t.orderByMap[fieldName] = sort
+func (t *Table) OrderBy(field string, sort bool) *Table {
+	t.orderByMap[field] = sort
 	return t
 }
 
@@ -92,8 +92,8 @@ func (t *Table) Offset(offset int) *Table {
 	return t
 }
 
-func (t *Table) Select(arg ...string) *Table {
-	t.selectField = arg
+func (t *Table) Select(fields ...string) *Table {
+	t.selectField = fields
 	return t
 }
 

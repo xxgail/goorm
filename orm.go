@@ -107,8 +107,8 @@ func (t *Table) Delete() (rowsAffected int64, err error) {
 	return
 }
 
-func (t *Table) FindQuery(primaryName string, primaryKey string) string {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryName + " = " + primaryKey + " AND `deleted_at` IS NULL"
+func (t *Table) FindQuery(primaryKey string, value string) string {
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + value + " AND `deleted_at` IS NULL"
 	fmt.Println(query)
 	return query
 }
@@ -125,12 +125,12 @@ func (t *Table) FirstQuery() string {
 	return query
 }
 
-func (t *Table) Find(primaryName string, primaryKey string) (info []string, err error) {
+func (t *Table) Find(primaryKey string, value string) (info []string, err error) {
 	if len(t.selectField) == 0 {
 		err = errors.New("请填写select")
 		return
 	}
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryName + " = " + primaryKey + " AND `deleted_at` IS NULL"
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + value + " AND `deleted_at` IS NULL"
 	values := make([]sql.RawBytes, len(t.selectField))
 	scanArgs := make([]interface{}, len(values))
 	for i := range values {
@@ -155,9 +155,13 @@ func (t *Table) Find(primaryName string, primaryKey string) (info []string, err 
 func (t *Table) Get() (list []map[string]interface{}, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.orderBy() + t.limitAndOffset()
 	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
 	columns, err := rows.Columns()
 	if err != nil {
-
+		return
 	}
 	defer rows.Close()
 	values := make([]sql.RawBytes, len(columns))
@@ -188,15 +192,23 @@ func (t *Table) Get() (list []map[string]interface{}, err error) {
 func (t *Table) First() (info map[string]interface{}, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.orderBy() + " LIMIT 1"
 	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
 	columns, err := rows.Columns()
 	if err != nil {
-
+		return
 	}
 	defer rows.Close()
 	values := make([]sql.RawBytes, len(columns))
 	scanArgs := make([]interface{}, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
+	}
+	if rows.Next() == false {
+		err = errors.New("no info")
+		return
 	}
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
@@ -213,6 +225,155 @@ func (t *Table) First() (info map[string]interface{}, err error) {
 		}
 	}
 	return
+}
+
+func (t *Table) Pluck(field string) (value string, err error) {
+	query := "SELECT " + field + " FROM " + t.TableName + t.getWhereStatement() + t.orderBy() + " LIMIT 1"
+	err = t.DB.QueryRow(query).Scan(&value)
+	if err != nil {
+		fmt.Println("找不到信息")
+		err = errors.New("该信息不存在")
+		return
+	}
+	return
+}
+
+func (t *Table) Count() (count int) {
+	query := "SELECT COUNT(*)" + " FROM " + t.TableName + t.getWhereStatement()
+	err := t.DB.QueryRow(query).Scan(&count)
+	if err != nil {
+		fmt.Println("无记录：", err)
+	}
+	return
+}
+
+func (t *Table) Sum(fields ...string) (sum map[string]string) {
+	return t.math("SUM", fields...)
+}
+
+func (t *Table) Max(fields ...string) (max map[string]string) {
+	return t.math("MAX", fields...)
+}
+
+func (t *Table) Min(fields ...string) (min map[string]string) {
+	return t.math("MIN", fields...)
+}
+
+func (t *Table) Avg(fields ...string) (avg map[string]float64) {
+	res := t.math("AVG", fields...)
+	avg = map[string]float64{} // 保留两位小数的
+	for k, v := range res {
+		vv, _ := strconv.ParseFloat(v, 64)
+		avg[k], _ = strconv.ParseFloat(fmt.Sprintf("%.2f", vv), 64)
+	}
+	return
+}
+
+func (t *Table) math(operate string, args ...string) (res map[string]string) {
+	var sumArr []string
+	sumArr = []string{}
+	for _, v := range args {
+		sumArr = append(sumArr, operate+"("+v+")")
+	}
+	values := make([]sql.RawBytes, len(args))
+	scanArgs := make([]interface{}, len(values))
+	for i := range values {
+		scanArgs[i] = &values[i]
+	}
+	query := "SELECT " + strings.Join(sumArr, ",") + " FROM " + t.TableName + t.getWhereStatement()
+	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		if err = rows.Scan(scanArgs...); err != nil {
+			fmt.Println("no info", err)
+			return
+		}
+		res = map[string]string{}
+		for k, v := range values {
+			res[args[k]+operate] = string(v)
+		}
+	}
+	return
+}
+
+func (t *Table) Increment(field string, num int) {
+	query := "SELECT id," + field + " FROM " + t.TableName + t.getWhereStatement() + t.limitAndOffset()
+	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id, fieldValue int
+		if err = rows.Scan(&id, &fieldValue); err != nil {
+			fmt.Println(err)
+			return
+		}
+		tx, err := t.DB.Begin()
+		if err != nil {
+			fmt.Println("tx fail")
+		}
+		query1 := "UPDATE " + t.TableName + " SET " + field + "=? WHERE id=?"
+		fmt.Println("update query", query1)
+		stmtUp, err := tx.Prepare(query1)
+		if err != nil {
+			fmt.Println("Prepare fail")
+		}
+		//设置参数以及执行sql语句
+		res, err := stmtUp.Exec(fieldValue+num, id)
+		if err != nil {
+			fmt.Println("Exec fail")
+		}
+		tx.Commit()
+		rowsAffected, err := res.RowsAffected()
+		fmt.Println(rowsAffected)
+	}
+}
+
+func (t *Table) Decrement(field string, num int) {
+	query := "SELECT id," + field + " FROM " + t.TableName + t.getWhereStatement() + t.limitAndOffset()
+	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id, fieldValue int
+		if err = rows.Scan(&id, &fieldValue); err != nil {
+			fmt.Println(err)
+			return
+		}
+		tx, err := t.DB.Begin()
+		if err != nil {
+			fmt.Println("tx fail")
+		}
+		query1 := "UPDATE " + t.TableName + " SET " + field + "=? WHERE id=?"
+		fmt.Println("update query", query1)
+		stmtUp, err := tx.Prepare(query1)
+		if err != nil {
+			fmt.Println("Prepare fail")
+		}
+		//设置参数以及执行sql语句
+		res, err := stmtUp.Exec(fieldValue-num, id)
+		if err != nil {
+			fmt.Println("Exec fail")
+		}
+		tx.Commit()
+		rowsAffected, err := res.RowsAffected()
+		fmt.Println(rowsAffected)
+	}
 }
 
 func (t *Table) getSelect() (selectField string) {
