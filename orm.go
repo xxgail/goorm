@@ -206,16 +206,16 @@ func (t *Table) First() (info map[string]interface{}, err error) {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	if rows.Next() == false {
-		err = errors.New("no info")
-		return
-	}
+	//if rows.Next() == false {
+	//	err = errors.New("no info")
+	//	return
+	//}
+	info = map[string]interface{}{}
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			fmt.Println(err)
 			return
 		}
-		info = map[string]interface{}{}
 		for k, v := range values {
 			if v == nil {
 				info[columns[k]] = ""
@@ -223,6 +223,10 @@ func (t *Table) First() (info map[string]interface{}, err error) {
 				info[columns[k]] = string(v)
 			}
 		}
+	}
+	if len(info) == 0 {
+		err = errors.New("no info")
+		return
 	}
 	return
 }
