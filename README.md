@@ -7,7 +7,7 @@ goorm 自用封装包（仿照laravel）
 
 `go get github.com/xxgail/goorm`
 
-###目前实现的方法有：
+### 目前实现的方法有：
 
 #### 初始化
 - NewTable("表名",db) : 初始化方法 db 目前仅有*sql.DB
