@@ -28,10 +28,10 @@ goorm 自用封装包（仿照laravel）
 - LeftJoin(tableName string, foreignKey string, primaryKey string) : _因为写的太乱，目前还不太实用_
 
 2. 查询语句
-- Find(primaryKey string, value string) map,err : 返回查询主键单条信息（前提是必须写select，待优化
+- Find(id string) map,err : 返回查询主键单条信息，只需要传主键的值（前提是只有一个主键，待优化吧..
 - Get() []map,err : 获取多条信息，可进行分页（待测试
 - First() []map,err : 获取单条信息
-- FindQuery(primaryKey string, value string) string : 返回查询主键单条信息的query语句
+- FindQuery(id string) string : 返回查询主键单条信息的query语句
 - GetQuery() string : 返回查询多条信息的query语句
 - FirstQuery() string : 返回查询单条信息的query语句
 

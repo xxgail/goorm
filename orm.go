@@ -107,9 +107,17 @@ func (t *Table) Delete() (rowsAffected int64, err error) {
 	return
 }
 
-func (t *Table) FindQuery(primaryKey string, value string) string {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + value + " AND `deleted_at` IS NULL"
-	fmt.Println(query)
+func (t *Table) FindQuery(id string) string {
+	// 查主键
+	queryPrimary := "SELECT column_name FROM INFORMATION_SCHEMA.`KEY_COLUMN_USAGE` WHERE table_name='" + t.TableName + "' AND constraint_name='PRIMARY';"
+	var primaryKey string
+	if err := t.DB.QueryRow(queryPrimary).Scan(&primaryKey); err != nil {
+		fmt.Println("没有主键")
+		err = errors.New("no primary key")
+		return ""
+	}
+	// 查主键 = id 的记录
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + id + " AND `deleted_at` IS NULL LIMIT 1"
 	return query
 }
 
@@ -125,29 +133,49 @@ func (t *Table) FirstQuery() string {
 	return query
 }
 
-func (t *Table) Find(primaryKey string, value string) (info []string, err error) {
-	if len(t.selectField) == 0 {
-		err = errors.New("请填写select")
+func (t *Table) Find(id string) (info map[string]interface{}, err error) {
+	// 查主键
+	queryPrimary := "SELECT column_name FROM INFORMATION_SCHEMA.`KEY_COLUMN_USAGE` WHERE table_name='" + t.TableName + "' AND constraint_name='PRIMARY';"
+	var primaryKey string
+	if err = t.DB.QueryRow(queryPrimary).Scan(&primaryKey); err != nil {
+		fmt.Println("没有主键")
+		err = errors.New("no primary key")
 		return
 	}
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + value + " AND `deleted_at` IS NULL"
-	values := make([]sql.RawBytes, len(t.selectField))
+	// 查主键 = id 的记录
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + id + " AND `deleted_at` IS NULL LIMIT 1"
+	rows, err := t.DB.Query(query)
+	if err != nil {
+		fmt.Println("no this sql_table", err)
+		return
+	}
+	columns, err := rows.Columns()
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	values := make([]sql.RawBytes, len(columns))
 	scanArgs := make([]interface{}, len(values))
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	err = t.DB.QueryRow(query).Scan(scanArgs...)
-	if err != nil {
-		fmt.Println("找不到信息")
-		return
-	}
-	info = []string{}
-	for _, v := range values {
-		if v == nil {
-			info = append(info, "")
-		} else {
-			info = append(info, string(v))
+	info = map[string]interface{}{}
+	for rows.Next() {
+		if err = rows.Scan(scanArgs...); err != nil {
+			fmt.Println(err)
+			return
 		}
+		for k, v := range values {
+			if v == nil {
+				info[columns[k]] = ""
+			} else {
+				info[columns[k]] = string(v)
+			}
+		}
+	}
+	if len(info) == 0 {
+		err = errors.New("no this info")
+		return
 	}
 	return
 }
