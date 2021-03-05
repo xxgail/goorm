@@ -19,6 +19,7 @@ type Table struct {
 	whereNullField        []string
 	whereNotNullField     []string
 	leftJoinTable         [][]string
+	groupByMap            []string
 }
 
 func NewTable(tableName string, db *sql.DB) *Table {
@@ -35,6 +36,7 @@ func NewTable(tableName string, db *sql.DB) *Table {
 		whereNullField:        []string{},
 		whereNotNullField:     []string{},
 		leftJoinTable:         [][]string{},
+		groupByMap:            []string{},
 	}
 }
 
@@ -68,12 +70,12 @@ func (t *Table) WhereNotIn(field string, scope []interface{}) *Table {
 }
 
 func (t *Table) WhereNull(fields ...string) *Table {
-	t.whereNullField = fields
+	t.whereNullField = append(t.whereNullField, fields...)
 	return t
 }
 
 func (t *Table) WhereNotNull(fields ...string) *Table {
-	t.whereNotNullField = fields
+	t.whereNotNullField = append(t.whereNotNullField, fields...)
 	return t
 }
 
@@ -93,11 +95,16 @@ func (t *Table) Offset(offset int) *Table {
 }
 
 func (t *Table) Select(fields ...string) *Table {
-	t.selectField = fields
+	t.selectField = append(t.selectField, fields...)
 	return t
 }
 
 func (t *Table) LeftJoin(tableName string, foreignKey string, primaryKey string) *Table {
 	t.leftJoinTable = append(t.leftJoinTable, []string{tableName, foreignKey, primaryKey})
+	return t
+}
+
+func (t *Table) GroupBy(fields ...string) *Table {
+	t.groupByMap = append(t.groupByMap, fields...)
 	return t
 }
