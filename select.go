@@ -35,7 +35,7 @@ func (t *Table) FirstQuery() string {
 	return query
 }
 
-func (t *Table) Find(id string) (info map[string]interface{}, err error) {
+func (t *Table) Find(id string) (info map[string]string, err error) {
 	// 查主键
 	queryPrimary := "SELECT column_name FROM INFORMATION_SCHEMA.`KEY_COLUMN_USAGE` WHERE table_name='" + t.TableName + "' AND constraint_name='PRIMARY';"
 	var primaryKey string
@@ -61,7 +61,7 @@ func (t *Table) Find(id string) (info map[string]interface{}, err error) {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	info = map[string]interface{}{}
+	info = map[string]string{}
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			fmt.Println(err)
@@ -82,7 +82,7 @@ func (t *Table) Find(id string) (info map[string]interface{}, err error) {
 	return
 }
 
-func (t *Table) Get() (list []map[string]interface{}, err error) {
+func (t *Table) Get() (list []map[string]string, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
 	rows, err := t.DB.Query(query)
 	if err != nil {
@@ -99,14 +99,14 @@ func (t *Table) Get() (list []map[string]interface{}, err error) {
 	for i := range values {
 		scanArgs[i] = &values[i]
 	}
-	list = []map[string]interface{}{}
+	list = []map[string]string{}
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			fmt.Println(err)
 			return
 		}
-		var item map[string]interface{}
-		item = map[string]interface{}{}
+		var item map[string]string
+		item = map[string]string{}
 		for k, v := range values {
 			if v == nil {
 				item[columns[k]] = ""
@@ -119,7 +119,7 @@ func (t *Table) Get() (list []map[string]interface{}, err error) {
 	return
 }
 
-func (t *Table) First() (info map[string]interface{}, err error) {
+func (t *Table) First() (info map[string]string, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
 	rows, err := t.DB.Query(query)
 	if err != nil {
@@ -140,7 +140,7 @@ func (t *Table) First() (info map[string]interface{}, err error) {
 	//	err = errors.New("no info")
 	//	return
 	//}
-	info = map[string]interface{}{}
+	info = map[string]string{}
 	for rows.Next() {
 		if err = rows.Scan(scanArgs...); err != nil {
 			fmt.Println(err)

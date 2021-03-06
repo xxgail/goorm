@@ -26,6 +26,7 @@ goorm 自用封装包（仿照laravel）
 - Limit(limit int)
 - Offset(offset int)
 - LeftJoin(tableName string, foreignKey string, primaryKey string) : _因为写的太乱，目前还不太实用_
+- GroupBy(fields ...string)
 
 2. 查询语句
 - Find(id string) map,err : 返回查询主键单条信息，只需要传主键的值（前提是只有一个主键，待优化吧..
