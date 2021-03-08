@@ -46,6 +46,7 @@ func (t *Table) Find(id string) (info map[string]interface{}, err error) {
 	}
 	// 查主键 = id 的记录
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + " WHERE " + primaryKey + " = " + id + " AND `deleted_at` IS NULL LIMIT 1"
+	fmt.Println("Find() ----- query", query)
 	rows, err := t.DB.Query(query)
 	if err != nil {
 		fmt.Println("no this sql_table", err)
@@ -84,6 +85,7 @@ func (t *Table) Find(id string) (info map[string]interface{}, err error) {
 
 func (t *Table) Get() (list []map[string]interface{}, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
+	fmt.Println("GET() ----- query", query)
 	rows, err := t.DB.Query(query)
 	if err != nil {
 		fmt.Println("no this sql_table", err)
@@ -121,6 +123,7 @@ func (t *Table) Get() (list []map[string]interface{}, err error) {
 
 func (t *Table) First() (info map[string]interface{}, err error) {
 	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
+	fmt.Println("First() ----- query", query)
 	rows, err := t.DB.Query(query)
 	if err != nil {
 		fmt.Println("no this sql_table", err)
@@ -326,6 +329,9 @@ func (t *Table) getWhereStatement() (whereState string) {
 	}
 	if len(whereStateArr) != 0 {
 		whereState += " AND " + strings.Join(whereStateArr, " AND ")
+		if len(t.orWhere) != 0 {
+			whereState += " OR " + strings.Join(t.orWhere, " OR ")
+		}
 	}
 	return whereState
 }

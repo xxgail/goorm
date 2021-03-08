@@ -20,6 +20,7 @@ type Table struct {
 	whereNotNullField     []string
 	leftJoinTable         [][]string
 	groupByMap            []string
+	orWhere               []string
 }
 
 func NewTable(tableName string, db *sql.DB) *Table {
@@ -37,6 +38,7 @@ func NewTable(tableName string, db *sql.DB) *Table {
 		whereNotNullField:     []string{},
 		leftJoinTable:         [][]string{},
 		groupByMap:            []string{},
+		orWhere:               []string{},
 	}
 }
 
@@ -106,5 +108,10 @@ func (t *Table) LeftJoin(tableName string, foreignKey string, primaryKey string)
 
 func (t *Table) GroupBy(fields ...string) *Table {
 	t.groupByMap = append(t.groupByMap, fields...)
+	return t
+}
+
+func (t *Table) OrWhere(condition ...string) *Table {
+	t.orWhere = append(t.orWhere, condition...)
 	return t
 }
