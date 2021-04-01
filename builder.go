@@ -21,6 +21,7 @@ type Table struct {
 	leftJoinTable         [][]string
 	groupByMap            []string
 	orWhere               []string
+	orderByRawMap         map[string]bool
 }
 
 func NewTable(tableName string, db *sql.DB) *Table {
@@ -39,6 +40,7 @@ func NewTable(tableName string, db *sql.DB) *Table {
 		leftJoinTable:         [][]string{},
 		groupByMap:            []string{},
 		orWhere:               []string{},
+		orderByRawMap:         map[string]bool{},
 	}
 }
 
@@ -113,5 +115,10 @@ func (t *Table) GroupBy(fields ...string) *Table {
 
 func (t *Table) OrWhere(condition ...string) *Table {
 	t.orWhere = append(t.orWhere, condition...)
+	return t
+}
+
+func (t *Table) OrderByRaw(field string, sort bool) *Table {
+	t.orderByRawMap[field] = sort
 	return t
 }

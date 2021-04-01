@@ -253,8 +253,8 @@ func (t *Table) limitAndOffset() (limit string) {
 }
 
 func (t *Table) orderBy() (orderBy string) {
+	var orderByArr []string
 	if len(t.orderByMap) != 0 {
-		var orderByArr []string
 		for k, v := range t.orderByMap {
 			if v {
 				orderByArr = append(orderByArr, k+" ASC")
@@ -262,6 +262,17 @@ func (t *Table) orderBy() (orderBy string) {
 				orderByArr = append(orderByArr, k+" DESC")
 			}
 		}
+	}
+	if len(t.orderByRawMap) != 0 {
+		for k, v := range t.orderByRawMap {
+			if v {
+				orderByArr = append(orderByArr, "FIELD("+k+") ASC")
+			} else {
+				orderByArr = append(orderByArr, "FIELD("+k+") DESC")
+			}
+		}
+	}
+	if len(orderByArr) != 0 {
 		orderBy = " ORDER BY " + strings.Join(orderByArr, ",")
 	}
 	return
