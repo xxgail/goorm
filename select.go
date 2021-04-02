@@ -280,8 +280,8 @@ func (t *Table) orderBy() (orderBy string) {
 
 func (t *Table) getWhereStatement() (whereState string) {
 	var whereStateArr []string
-	if len(t.whereCondition) != 0 {
-		for k, v := range t.whereCondition {
+	if len(t.wheresCondition) != 0 {
+		for k, v := range t.wheresCondition {
 			var tmp string
 			switch v.(type) {
 			case string:
@@ -294,8 +294,8 @@ func (t *Table) getWhereStatement() (whereState string) {
 			whereStateArr = append(whereStateArr, tmp)
 		}
 	}
-	if len(t.compareCondition) != 0 {
-		for _, v := range t.compareCondition {
+	if len(t.whereCondition) != 0 {
+		for _, v := range t.whereCondition {
 			tmp := v[0].(string) + v[1].(string) + v[2].(string)
 			whereStateArr = append(whereStateArr, tmp)
 		}
@@ -333,16 +333,22 @@ func (t *Table) getWhereStatement() (whereState string) {
 			whereStateArr = append(whereStateArr, v+" IS NOT NULL")
 		}
 	}
+	if len(t.whereQuery) != 0 {
+		for _, v := range t.whereQuery {
+			whereStateArr = append(whereStateArr, "("+v+")")
+		}
+	}
 	if len(t.leftJoinTable) == 0 {
 		whereState = " WHERE deleted_at IS NULL"
 	} else {
 		whereState = " WHERE t.deleted_at IS NULL"
 	}
 	if len(whereStateArr) != 0 {
-		whereState += " AND " + strings.Join(whereStateArr, " AND ")
+		whereState += " AND (" + strings.Join(whereStateArr, " AND ")
 		if len(t.orWhere) != 0 {
 			whereState += " OR " + strings.Join(t.orWhere, " OR ")
 		}
+		whereState += ")"
 	}
 	return whereState
 }

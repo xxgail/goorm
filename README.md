@@ -15,8 +15,9 @@ goorm 自用封装包（仿照laravel）
 #### 查询
 1. 查询条件
 - Select(fields ...string) : 筛选字段
-- Where(map[string]interface{}) : where数组查询
-- WhereCompare(field string, compare string, value interface{}) : where比较查询
+- Wheres(map[string]interface{}) : where数组查询
+- Where(field string, value ...interface{}) : where比较查询，如果不填比较符号，默认为“=”
+- WhereQuery(...string) : 需要用“()”包裹起来的where语句
 - WhereIN(field string, scope []interface{})
 - WhereNotIn(field string, scope []interface{})
 - WhereBetween(field string, left string, right string)
@@ -27,6 +28,7 @@ goorm 自用封装包（仿照laravel）
 - Offset(offset int)
 - LeftJoin(tableName string, foreignKey string, primaryKey string) : _因为写的太乱，目前还不太实用_
 - GroupBy(fields ...string)
+- OrderByRaw(orderByQuery string, sort bool) : 用于单个字段的规定顺序查找
 
 2. 查询语句
 - Find(id string) map,err : 返回查询主键单条信息，只需要传主键的值（前提是只有一个主键，待优化吧..

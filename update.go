@@ -47,14 +47,14 @@ func (t *Table) getUpdateWhereStatement() (string, []interface{}) {
 	var whereState string
 	var fieldsValue []interface{}
 	var whereStateArr []string
-	if len(t.whereCondition) != 0 {
-		for k, v := range t.whereCondition {
+	if len(t.wheresCondition) != 0 {
+		for k, v := range t.wheresCondition {
 			whereStateArr = append(whereStateArr, k+"=?")
 			fieldsValue = append(fieldsValue, v)
 		}
 	}
-	if len(t.compareCondition) != 0 {
-		for _, v := range t.compareCondition {
+	if len(t.whereCondition) != 0 {
+		for _, v := range t.whereCondition {
 			whereStateArr = append(whereStateArr, v[0].(string)+v[1].(string)+" ?")
 			fieldsValue = append(fieldsValue, v[2])
 		}
@@ -95,9 +95,14 @@ func (t *Table) getUpdateWhereStatement() (string, []interface{}) {
 			whereStateArr = append(whereStateArr, v+" IS NOT NULL ")
 		}
 	}
+	if len(t.whereQuery) != 0 {
+		for _, v := range t.whereQuery {
+			whereStateArr = append(whereStateArr, "("+v+")")
+		}
+	}
 	whereState = " WHERE deleted_at IS NULL"
 	if len(whereStateArr) != 0 {
-		whereState += " AND " + strings.Join(whereStateArr, " AND ")
+		whereState += " AND (" + strings.Join(whereStateArr, " AND ") + ")"
 	}
 	return whereState, fieldsValue
 }

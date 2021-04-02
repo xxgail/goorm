@@ -7,8 +7,9 @@ import (
 type Table struct {
 	TableName             string
 	DB                    *sql.DB
-	whereCondition        map[string]interface{}
-	compareCondition      [][]interface{}
+	wheresCondition       map[string]interface{}
+	whereCondition        [][]interface{}
+	whereQuery            []string
 	whereBetweenCondition [][]string
 	whereInCondition      map[string][]interface{}
 	whereNotInCondition   map[string][]interface{}
@@ -28,8 +29,9 @@ func NewTable(tableName string, db *sql.DB) *Table {
 	return &Table{
 		TableName:             tableName,
 		DB:                    db,
-		whereCondition:        map[string]interface{}{},
-		compareCondition:      [][]interface{}{},
+		wheresCondition:       map[string]interface{}{},
+		whereCondition:        [][]interface{}{},
+		whereQuery:            []string{},
 		whereBetweenCondition: [][]string{},
 		whereInCondition:      map[string][]interface{}{},
 		whereNotInCondition:   map[string][]interface{}{},
@@ -44,17 +46,22 @@ func NewTable(tableName string, db *sql.DB) *Table {
 	}
 }
 
-func (t *Table) Where(where map[string]interface{}) *Table {
-	t.whereCondition = where
+func (t *Table) Wheres(where map[string]interface{}) *Table {
+	t.wheresCondition = where
 	return t
 }
 
-func (t *Table) WhereCompare(field string, compare string, value interface{}) *Table {
-	if compare == "=" {
-		t.whereCondition[field] = value
+func (t *Table) Where(field string, value ...interface{}) *Table {
+	if len(value) == 1 {
+		t.wheresCondition[field] = value[0]
 	} else {
-		t.compareCondition = append(t.compareCondition, []interface{}{field, compare, value})
+		t.whereCondition = append(t.whereCondition, []interface{}{field, value[0].(string), value[1]})
 	}
+	return t
+}
+
+func (t *Table) WhereQuery(query ...string) *Table {
+	t.whereQuery = append(t.whereQuery, query...)
 	return t
 }
 
