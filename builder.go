@@ -117,8 +117,11 @@ func (t *Table) Select(fields ...string) *Table {
 	return t
 }
 
-func (t *Table) LeftJoin(tableName string, tableNameAlias string, on ONString) *Table {
-	t.leftJoinTable = append(t.leftJoinTable, tableName+" "+tableNameAlias+" "+string(on))
+func (t *Table) LeftJoin(tableName string, tableNameAlias string, on ...string) *Table {
+	if t.TableNameAlias == "" {
+		t.TableNameAlias = "t"
+	}
+	t.leftJoinTable = append(t.leftJoinTable, tableName+" "+tableNameAlias+" ON "+t.joinOn(tableNameAlias, on...))
 	return t
 }
 
@@ -140,4 +143,12 @@ func (t *Table) OrWhere(condition ...string) *Table {
 func (t *Table) OrderByRaw(field string, sort bool) *Table {
 	t.orderByRawMap[field] = sort
 	return t
+}
+
+func (t *Table) joinOn(leftTableNameAlias string, on ...string) string {
+	if len(on) == 1 {
+		return on[0]
+	} else {
+		return t.TableNameAlias + "." + on[0] + "=" + leftTableNameAlias + "." + on[1]
+	}
 }
