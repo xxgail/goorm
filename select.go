@@ -357,13 +357,13 @@ func (t *Table) leftJoin() (leftJoin string) {
 	if len(t.leftJoinTable) != 0 {
 		var leftJoinArr []string
 		leftJoinArr = []string{}
-		leftJoin = " t "
-		i := 97
-		for k, v := range t.leftJoinTable {
-			alias := string(rune(i + k))
-			leftJoinArr = append(leftJoinArr, "LEFT JOIN "+v[0]+" "+alias+" ON "+"t."+v[1]+" = "+alias+"."+v[2])
+		//leftJoin = " t "
+		//i := 97
+		for _, v := range t.leftJoinTable {
+			//alias := string(rune(i + k))
+			leftJoinArr = append(leftJoinArr, "LEFT JOIN "+v[0]+" ON "+v[1]+" = "+v[2])
 		}
-		leftJoin += strings.Join(leftJoinArr, " ")
+		leftJoin = strings.Join(leftJoinArr, " ")
 	}
 	return
 }
