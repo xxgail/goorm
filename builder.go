@@ -20,7 +20,7 @@ type Table struct {
 	selectField           []string
 	whereNullField        []string
 	whereNotNullField     []string
-	leftJoinTable         [][]string
+	leftJoinTable         []string
 	groupByMap            []string
 	orWhere               []string
 	orderByRawMap         map[string]bool
@@ -41,7 +41,7 @@ func NewTable(tableName string, db *sql.DB) *Table {
 		selectField:           []string{},
 		whereNullField:        []string{},
 		whereNotNullField:     []string{},
-		leftJoinTable:         [][]string{},
+		leftJoinTable:         []string{},
 		groupByMap:            []string{},
 		orWhere:               []string{},
 		orderByRawMap:         map[string]bool{},
@@ -117,10 +117,15 @@ func (t *Table) Select(fields ...string) *Table {
 	return t
 }
 
-func (t *Table) LeftJoin(tableName string, foreignKey string, primaryKey string) *Table {
-	t.leftJoinTable = append(t.leftJoinTable, []string{tableName, foreignKey, primaryKey})
+func (t *Table) LeftJoin(tableName string, tableNameAlias string, on ONString) *Table {
+	t.leftJoinTable = append(t.leftJoinTable, tableName+" "+tableNameAlias+" "+string(on))
 	return t
 }
+
+//func (t *Table) LeftJoin(tableName string, foreignKey string, primaryKey string) *Table {
+//	t.leftJoinTable = append(t.leftJoinTable, []string{tableName, foreignKey, primaryKey})
+//	return t
+//}
 
 func (t *Table) GroupBy(fields ...string) *Table {
 	t.groupByMap = append(t.groupByMap, fields...)

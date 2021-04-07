@@ -361,7 +361,7 @@ func (t *Table) leftJoin() (leftJoin string) {
 		//i := 97
 		for _, v := range t.leftJoinTable {
 			//alias := string(rune(i + k))
-			leftJoinArr = append(leftJoinArr, "LEFT JOIN "+v[0]+" ON "+v[1]+" = "+v[2])
+			leftJoinArr = append(leftJoinArr, "LEFT JOIN "+v)
 		}
 		leftJoin = strings.Join(leftJoinArr, " ")
 		if t.TableNameAlias == "" {
