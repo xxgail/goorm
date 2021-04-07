@@ -121,6 +121,9 @@ func (t *Table) LeftJoin(tableName string, tableNameAlias string, on ...string) 
 	if t.TableNameAlias == "" {
 		t.TableNameAlias = "t"
 	}
+	if tableNameAlias == "" {
+		tableNameAlias = tableName
+	}
 	t.leftJoinTable = append(t.leftJoinTable, tableName+" "+tableNameAlias+" ON "+t.joinOn(tableNameAlias, on...))
 	return t
 }

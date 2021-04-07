@@ -26,7 +26,7 @@ goorm 自用封装包（仿照laravel）
 - OrderBy(field string, sort bool) : sort-true:ASC, sort-false:DESC
 - Limit(limit int)
 - Offset(offset int)
-- LeftJoin(tableName string, foreignKey string, primaryKey string) : _因为写的太乱，目前还不太实用_
+- LeftJoin(tableName string, tableNameAlias string, on ...string) : 左连接。第一个参数是连接的表名，第二个是表名的别名（如果为空就是表名） _因为写的太乱，目前还不太实用_
 - GroupBy(fields ...string)
 - OrderByRaw(orderByQuery string, sort bool) : 用于单个字段的规定顺序查找
 
