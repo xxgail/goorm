@@ -6,6 +6,7 @@ import (
 
 type Table struct {
 	TableName             string
+	TableNameAlias        string
 	DB                    *sql.DB
 	wheresCondition       map[string]interface{}
 	whereCondition        [][]interface{}
@@ -28,6 +29,7 @@ type Table struct {
 func NewTable(tableName string, db *sql.DB) *Table {
 	return &Table{
 		TableName:             tableName,
+		TableNameAlias:        "",
 		DB:                    db,
 		wheresCondition:       map[string]interface{}{},
 		whereCondition:        [][]interface{}{},
@@ -44,6 +46,11 @@ func NewTable(tableName string, db *sql.DB) *Table {
 		orWhere:               []string{},
 		orderByRawMap:         map[string]bool{},
 	}
+}
+
+func (t *Table) SetAKA(alias string) *Table {
+	t.TableNameAlias = alias
+	return t
 }
 
 func (t *Table) Wheres(where map[string]interface{}) *Table {

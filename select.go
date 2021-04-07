@@ -24,13 +24,13 @@ func (t *Table) FindQuery(id string) string {
 }
 
 func (t *Table) GetQuery() string {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.TableNameAlias + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
 	log.Println("SELECT----" + query)
 	return query
 }
 
 func (t *Table) FirstQuery() string {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.TableNameAlias + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
 	log.Println("SELECT----" + query)
 	return query
 }
@@ -84,7 +84,7 @@ func (t *Table) Find(id string) (info map[string]interface{}, err error) {
 }
 
 func (t *Table) Get() (list []map[string]interface{}, err error) {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.TableNameAlias + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + t.limitAndOffset()
 	fmt.Println("GET() ----- query", query)
 	rows, err := t.DB.Query(query)
 	if err != nil {
@@ -122,7 +122,7 @@ func (t *Table) Get() (list []map[string]interface{}, err error) {
 }
 
 func (t *Table) First() (info map[string]interface{}, err error) {
-	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
+	query := "SELECT " + t.getSelect() + " FROM " + t.TableName + t.TableNameAlias + t.leftJoin() + t.getWhereStatement() + t.getGroupBy() + t.orderBy() + " LIMIT 1"
 	fmt.Println("First() ----- query", query)
 	rows, err := t.DB.Query(query)
 	if err != nil {
@@ -364,6 +364,11 @@ func (t *Table) leftJoin() (leftJoin string) {
 			leftJoinArr = append(leftJoinArr, "LEFT JOIN "+v[0]+" ON "+v[1]+" = "+v[2])
 		}
 		leftJoin = strings.Join(leftJoinArr, " ")
+		if t.TableNameAlias == "" {
+			t.TableNameAlias = " t "
+		} else {
+			t.TableNameAlias = " " + t.TableNameAlias + " "
+		}
 	}
 	return
 }
